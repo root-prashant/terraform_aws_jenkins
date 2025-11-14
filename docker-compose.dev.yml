@@ -38,9 +38,9 @@ services:
     depends_on: 
       postgres: 
         condition: service_healthy
-      networks: 
-        - notes_network
-      restart: on-failure 
+    networks: 
+      - notes_network
+    restart: on-failure 
 
   frontend: 
     build: 
