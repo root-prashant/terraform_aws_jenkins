@@ -16,8 +16,12 @@ RUN npm install
 COPY . .
 
 # Setting up environment variable that our react app will use during build time
-ARG REACT_APP_API_URL=http://localhost:5000/api
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ARG ENV_FILE=.env.development
+ENV ENV_FILE=$ENV_FILE
+
+
+#copying the correct environment's file before build 
+RUN cp ${ENV_FILE} .env
 
 # This will build the production version of the app
 # This will output static files to "build/" directory
