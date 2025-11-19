@@ -47,6 +47,8 @@ services:
   frontend: 
     build: 
       context: ./frontend
+      args: 
+        ENV_FILE: ".env.production"
       dockerfile: Dockerfile 
     container_name: notes-frontend
     ports: 
