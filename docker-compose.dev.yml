@@ -1,0 +1,69 @@
+services:
+  postgres: 
+    image: postgres:15-alpine 
+    container_name: notes-db 
+    environment: 
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME} 
+      PGDATA: /var/lib/postgresql/data/pgdata 
+
+    ports: 
+      - "5432:5432" 
+    volumes: 
+      - postgres_data:/var/lib/postgresql/data 
+    networks: 
+      - notes_network 
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"] 
+      interval: 10s 
+      timeout: 5s 
+      retries: 5 
+
+  backend: 
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile 
+    container_name: notes-backend 
+    ports:
+      - "5000:5000" 
+    env_file:
+      - .env
+    environment: 
+      - DB_HOST=${DB_HOST} 
+      - DB_PORT=${DB_PORT} 
+      - DB_USER=${DB_USER} 
+      - DB_PASSWORD=${DB_PASSWORD} 
+      - DB_NAME=${DB_NAME}
+      - NODE_ENV=${NODE_ENV} 
+    
+    depends_on: 
+      postgres: 
+        condition: service_healthy
+    networks: 
+      - notes_network
+    restart: on-failure 
+
+  frontend: 
+    build: 
+      context: ./frontend 
+      args: 
+        ENV_FILE: ".env.development"
+      dockerfile: Dockerfile 
+    container_name: notes-frontend 
+    ports:
+      - "3000:80" 
+    networks: 
+      - notes_network 
+    depends_on: 
+      - backend 
+    restart: unless-stopped 
+
+volumes: 
+  postgres_data: 
+
+networks: 
+  notes_network: 
+    driver: bridge
+
+
