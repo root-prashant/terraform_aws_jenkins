@@ -16,12 +16,18 @@ RUN npm install
 COPY . .
 
 # Setting up environment variable that our react app will use during build time
-ARG ENV_FILE=.env.development
+ARG ENV_FILE
 ENV ENV_FILE=$ENV_FILE
 
 
 #copying the correct environment's file before build 
-RUN cp ${ENV_FILE} .env
+#we need to check if the variable was passsed and the file exists before copying
+RUN if [ -n "${ENV_FILE}" ] && [ "${ENV_FILE}" != "none" ]; then \ 
+        cp ${ENV_FILE} .env; \
+    else \
+        echo "WARNING: no environment file specified for build." && touch .env; \
+    fi 
+
 
 # This will build the production version of the app
 # This will output static files to "build/" directory
